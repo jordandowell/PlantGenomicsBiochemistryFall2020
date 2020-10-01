@@ -22,7 +22,7 @@ EnzymeList<-list()
 for (i in 1:numberofnodes) {
   if(Terpenoid@nodes[[i]]@type %in% "enzyme"){
     EnzymeList<-c(EnzymeList,as.character(Terpenoid@nodes[[i]]@name))
-   # EnzymeList[length(EnzymeList)+1,]<-Enzymetobeadded
+    # EnzymeList[length(EnzymeList)+1,]<-Enzymetobeadded
   }
 }
 
@@ -62,8 +62,8 @@ for (i in 1:SUNFLOWERTOTALGENES) {
         SUNFLOWERENZYMES<-rbind(SUNFLOWERENZYMES,newrow)
       }
       
-    print(i)
-    print(SUNFLOWERANNOTATION@listData$ec_number[i][[1]])
+      print(i)
+      print(SUNFLOWERANNOTATION@listData$ec_number[i][[1]])
     }
   }
 }
@@ -82,13 +82,13 @@ options(stringsAsFactors = F)
 for (i in 1:SUNFLOWERTOTALGENES) {
   #if any parent gene matches previously identifed mrna
   if(any(SUNFLOWERANNOTATION@listData$Parent[i][[1]]%in%SUNFLOWERENZYMES[,3])){
-  
+    
     #get index, parent gene,IDs
     newrow<- c(i,SUNFLOWERANNOTATION@listData$Parent[i][[1]],SUNFLOWERANNOTATION@listData$ID[i][[1]])
-  SUNFLOWERGENEMODELS<-rbind(SUNFLOWERGENEMODELS,newrow)
-  print(i)
-  print(SUNFLOWERANNOTATION@listData$ID[i][[1]])
-}
+    SUNFLOWERGENEMODELS<-rbind(SUNFLOWERGENEMODELS,newrow)
+    print(i)
+    print(SUNFLOWERANNOTATION@listData$ID[i][[1]])
+  }
 }
 options(stringsAsFactors = T)
 
@@ -166,137 +166,146 @@ Directorylist<-list.dirs(full.names = F,recursive = F)
 #loops across Enzyme types and genemodel types 
 for (i in 1:length(EnzymeTypes)) {
   print(EnzymeTypes[i])
-
   
   
-
-
-#get the Enzyme
-Enzymetypeofinterest<-EnzymeTypes[i]
-
-#get the indicies of the annotation based on your Enzyme type
-
-SUNFLOWERENZYMES_GENEMODELS_ofinterest<-subset(SUNFLOWERENZYMES_GENEMODELS, SUNFLOWERENZYMES_GENEMODELS[,2] %in% Enzymetypeofinterest)
-  
-#subset the annotation file based on the indicies of enzymes
-SUNFLOWERANNOTATION_Enzyme_Subset<- SUNFLOWERANNOTATION[as.numeric(SUNFLOWERENZYMES_GENEMODELS_ofinterest[,1]),]
-
-
-#for loop to cycle across chromosomes @@@@@
-
-j<-1
-Genemodel_SNPLIST<-data.frame()
-Genemodel_VARIANTLIST<-data.frame()
-for (j in 1:length(unique(SUNFLOWERANNOTATION_Enzyme_Subset[,1]))) {
   
   
-  #subset by chromosome
-  chromosome<-unique(SUNFLOWERANNOTATION_Enzyme_Subset[,1])[j]
-  #use the annotation to subset based on the chromosome
-  chromosomesetofinterest<-subset(SUNFLOWERANNOTATION_Enzyme_Subset, SUNFLOWERANNOTATION_Enzyme_Subset[,1]%in%chromosome)
-  #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
-  chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
+  
+  #get the Enzyme
+  Enzymetypeofinterest<-EnzymeTypes[i]
+  
+  #get the indicies of the annotation based on your Enzyme type
+  
+  SUNFLOWERENZYMES_GENEMODELS_ofinterest<-subset(SUNFLOWERENZYMES_GENEMODELS, SUNFLOWERENZYMES_GENEMODELS[,2] %in% Enzymetypeofinterest)
+  
+  #subset the annotation file based on the indicies of enzymes
+  SUNFLOWERANNOTATION_Enzyme_Subset<- SUNFLOWERANNOTATION[as.numeric(SUNFLOWERENZYMES_GENEMODELS_ofinterest[,1]),]
   
   
-  #get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
-  #create a list of possible positions
-  Possiblepositions<-c()
+  #for loop to cycle across chromosomes @@@@@
   
-  for (L in 1:nrow(chromosomesetofinterest)) {
-    newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
-    Possiblepositions<-c(Possiblepositions,newlist)
+  j<-1
+  Genemodel_SNPLIST<-data.frame()
+  Genemodel_VARIANTLIST<-data.frame()
+  for (j in 1:length(unique(SUNFLOWERANNOTATION_Enzyme_Subset[,1]))) {
+    
+    
+    #subset by chromosome
+    chromosome<-unique(SUNFLOWERANNOTATION_Enzyme_Subset[,1])[j]
+    #use the annotation to subset based on the chromosome
+    chromosomesetofinterest<-subset(SUNFLOWERANNOTATION_Enzyme_Subset, SUNFLOWERANNOTATION_Enzyme_Subset[,1]%in%chromosome)
+    #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
+    chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
+    
+    
+    #get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
+    #create a list of possible positions
+    Possiblepositions<-c()
+    
+    for (L in 1:nrow(chromosomesetofinterest)) {
+      newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
+      Possiblepositions<-c(Possiblepositions,newlist)
+    }
+    #subset the SNP list if the position is %in% one of the possible positions
+    subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
+    
+    
+    #get SNP variants
+    #we are using the row indexes from out SNPlist
+    
+    subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
+    #make sure the names of SNPS are equal before proceeding 
+    #this will need to be an if else statement before adding it to the dataframe for writing 
+    print(chromosome)
+    Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
+    Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
   }
-  #subset the SNP list if the position is %in% one of the possible positions
-  subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
-  
-  
-  #get SNP variants
-  #we are using the row indexes from out SNPlist
-  
-  subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
-  #make sure the names of SNPS are equal before proceeding 
-  #this will need to be an if else statement before adding it to the dataframe for writing 
-  print(chromosome)
-  Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
-  Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
-}
-#write .tped & .map file so they can be used in other analyses
-write.table(Genemodel_SNPLIST, paste0(Enzymetypeofinterest,"/",Enzymetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
-write.table(Genemodel_VARIANTLIST, paste0(Enzymetypeofinterest,"/",Enzymetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
-
-
-
-
-
-
-#create directory 1 for each genemodel type in each enzyme files 
-Genetypes<-unique(SUNFLOWERANNOTATION_Enzyme_Subset[,3])
-
-#create a directory for genetypes
-
-for (i in 1:length(Genetypes)) {
-  dir.create(path=paste0(Enzymetypeofinterest,"/",Genetypes[i]))
-}
-
-#this for loop cycles over gene model types
-i<-1
-for (i in 1:length(Genetypes)) {
-  print(Genetypes[i])
-  
-  #get the genetype
-  Genetypeofinterest<-Genetypes[i]
+  #write .tped & .map file so they can be used in other analyses
+  write.table(Genemodel_SNPLIST, paste0(Enzymetypeofinterest,"/",Enzymetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
+  write.table(Genemodel_VARIANTLIST, paste0(Enzymetypeofinterest,"/",Enzymetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
   
   
   
-  #subset the annotation based on your gene type
-  EnzymeGenemodel_Genesetofinterest<-subset(SUNFLOWERANNOTATION_Enzyme_Subset,Genetypeofinterest%in%SUNFLOWERANNOTATION_Enzyme_Subset[,3])
-  
-
-#for loop to cycle across chromosomes 
-
-j<-1
-Genemodel_SNPLIST<-data.frame()
-Genemodel_VARIANTLIST<-data.frame()
-for (j in 1:length(unique(EnzymeGenemodel_Genesetofinterest[,1]))) {
   
   
-  #subset by chromosome
-  chromosome<-unique(EnzymeGenemodel_Genesetofinterest[,1])[j]
-  #use the annotation to subset based on the chromosome
-  chromosomesetofinterest<-subset(EnzymeGenemodel_Genesetofinterest, EnzymeGenemodel_Genesetofinterest[,1]%in%chromosome)
-  #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
-  chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
   
+  #create directory 1 for each genemodel type in each enzyme files 
+  Genetypes<-unique(SUNFLOWERANNOTATION_Enzyme_Subset[,3])
   
-  #get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
-  #create a list of possible positions
-  Possiblepositions<-c()
+  #create a directory for genetypes
   
-  for (L in 1:nrow(chromosomesetofinterest)) {
-    newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
-    Possiblepositions<-c(Possiblepositions,newlist)
+  for (i in 1:length(Genetypes)) {
+    dir.create(path=paste0(Enzymetypeofinterest,"/",Genetypes[i]))
   }
-  #subset the SNP list if the position is %in% one of the possible positions
-  subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
+  
+  #this for loop cycles over gene model types
+  i<-1
+  for (i in 1:length(Genetypes)) {
+    print(Genetypes[i])
+    
+    #get the genetype
+    Genetypeofinterest<-Genetypes[i]
+    
+    
+    
+    #subset the annotation based on your gene type
+    EnzymeGenemodel_Genesetofinterest<-subset(SUNFLOWERANNOTATION_Enzyme_Subset,SUNFLOWERANNOTATION_Enzyme_Subset[,3]%in%Genetypeofinterest)
+    
+    
+    #for loop to cycle across chromosomes 
+    
+    j<-1
+    Genemodel_SNPLIST<-data.frame()
+    Genemodel_VARIANTLIST<-data.frame()
+    
+    #fix for assessing chromosome level SNPs
+    chromosomes<-c(unique(as.character(SNPLIST[,1])), unique(as.character(EnzymeGenemodel_Genesetofinterest[,1])))
+    chromosomes_present<-chromosomes[duplicated(chromosomes)]
+    
+    
+    
+    
+    
+    for (j in 1:length(unique(chromosomes_present))) {
+      
+      
+      #subset by chromosome
+      chromosome<-chromosomes_present[j]
+      #use the annotation to subset based on the chromosome
+      chromosomesetofinterest<-subset(EnzymeGenemodel_Genesetofinterest, EnzymeGenemodel_Genesetofinterest[,1]%in%chromosome)
+      #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
+      chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
+      
+      
+      #get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
+      #create a list of possible positions
+      Possiblepositions<-c()
+      
+      for (L in 1:nrow(chromosomesetofinterest)) {
+        newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
+        Possiblepositions<-c(Possiblepositions,newlist)
+      }
+      #subset the SNP list if the position is %in% one of the possible positions
+      subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
+      
+      
+      #get SNP variants
+      #we are using the row indexes from out SNPlist
+      
+      subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
+      #make sure the names of SNPS are equal before proceeding 
+      #this will need to be an if else statement before adding it to the dataframe for writing 
+      print(chromosome)
+      Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
+      Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
+    }
+    #write .tped & .map file so they can be used in other analyses
+    write.table(Genemodel_SNPLIST, paste0(Enzymetypeofinterest,"/",Genetypeofinterest,"/",Genetypeofinterest,"_",Enzymetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
+    write.table(Genemodel_VARIANTLIST, paste0(Enzymetypeofinterest,"/",Genetypeofinterest,"/",Genetypeofinterest,"_",Enzymetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
+    
+  }
   
   
-  #get SNP variants
-  #we are using the row indexes from out SNPlist
-  
-  subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
-  #make sure the names of SNPS are equal before proceeding 
-  #this will need to be an if else statement before adding it to the dataframe for writing 
-  print(chromosome)
-  Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
-  Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
-}
-#write .tped & .map file so they can be used in other analyses
-write.table(Genemodel_SNPLIST, paste0(Enzymetypeofinterest,"/",Genetypeofinterest,"/",Genetypeofinterest,"_",Enzymetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
-write.table(Genemodel_VARIANTLIST, paste0(Enzymetypeofinterest,"/",Genetypeofinterest,"/",Genetypeofinterest,"_",Enzymetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
-
-}
-
-
 }
 
 
@@ -312,11 +321,18 @@ setwd("..")
 j<-1
 Genemodel_SNPLIST<-data.frame()
 Genemodel_VARIANTLIST<-data.frame()
-for (j in 1:length(unique(SUNFLOWERANNOTATION_Subset[,1]))) {
+
+#fix for assessing chromosome level SNPs
+chromosomes<-c(unique(as.character(SNPLIST[,1])), unique(as.character(SUNFLOWERANNOTATION_Subset[,1])))
+chromosomes_present<-chromosomes[duplicated(chromosomes)]
+
+
+for (j in 1:length(unique(chromosomes_present))) {
+  
   
   
   #subset by chromosome
-  chromosome<-unique(SUNFLOWERANNOTATION_Subset[,1])[j]
+  chromosome<-chromosomes_present[j]
   #use the annotation to subset based on the chromosome
   chromosomesetofinterest<-subset(SUNFLOWERANNOTATION_Subset, SUNFLOWERANNOTATION_Subset[,1]%in%chromosome)
   #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
@@ -386,62 +402,68 @@ Directorylist<-list.dirs(full.names = F,recursive = F)
 #MAKE SURE YOU ARE IN THE OUTPUT DIRECTORY
 #setwd("..")
 #check the number of genetypes with the summary function and make the for loop only sequence through genetypes with genes
-
+getwd()
 #this for loop cycles over gene model types
 i<-1
 for (i in 1:length(Genetypes)) {
   print(Genetypes[i])
-
-#get the genetype
-Genetypeofinterest<-Genetypes[i]
-
-
-
-#subset the annotation based on your gene type
-Genesetofinterest<-subset(SUNFLOWERANNOTATION_Subset,Genetypeofinterest%in%SUNFLOWERANNOTATION_Subset[,3])
-
-#for loop to cycle across chromosomes 
-
-j<-1
-Genemodel_SNPLIST<-data.frame()
-Genemodel_VARIANTLIST<-data.frame()
-for (j in 1:length(unique(SNPLIST[,1]))) {
   
-
-#subset by chromosome
-chromosome<-unique(SNPLIST[,1])[j]
-#use the annotation to subset based on the chromosome
-chromosomesetofinterest<-subset(Genesetofinterest, Genesetofinterest[,1]%in%chromosome)
-#subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
-chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
-
-
-#get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
-#create a list of possible positions
-Possiblepositions<-c()
-
-for (L in 1:nrow(chromosomesetofinterest)) {
-  newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
-  Possiblepositions<-c(Possiblepositions,newlist)
-}
-#subset the SNP list if the position is %in% one of the possible positions
-subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
-
-
-#get SNP variants
-#we are using the row indexes from out SNPlist
-
-subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
-#make sure the names of SNPS are equal before proceeding 
-#this will need to be an if else statement before adding it to the dataframe for writing 
-print(chromosome)
-Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
-Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
-}
-#write .tped & .map file so they can be used in other analyses
-write.table(Genemodel_SNPLIST, paste0(Genetypeofinterest,"/",Genetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
-write.table(Genemodel_VARIANTLIST, paste0(Genetypeofinterest,"/",Genetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
-
+  #get the genetype
+  Genetypeofinterest<-Genetypes[i]
+  
+  
+  
+  #subset the annotation based on your gene type
+  Genesetofinterest<-subset(SUNFLOWERANNOTATION_Subset,SUNFLOWERANNOTATION_Subset[,3]%in%Genetypeofinterest)
+  
+  #for loop to cycle across chromosomes 
+  
+  j<-1
+  Genemodel_SNPLIST<-data.frame()
+  Genemodel_VARIANTLIST<-data.frame()
+  
+  #fix for assessing chromosome level SNPs
+  chromosomes<-c(unique(as.character(SNPLIST[,1])), unique(as.character(Genesetofinterest[,1])))
+  chromosomes_present<-chromosomes[duplicated(chromosomes)]
+  
+  for (j in 1:length(unique(chromosomes_present))) {
+    
+    
+    
+    #subset by chromosome
+    chromosome<-chromosomes_present[j]
+    #use the annotation to subset based on the chromosome
+    chromosomesetofinterest<-subset(Genesetofinterest, Genesetofinterest[,1]%in%chromosome)
+    #subset the SNPLIST based on chromsome(SNPLIST is a smaller data file than SNPvariant which is why we are using it)
+    chromosomeSNPLISTofinterest<-subset(SNPLIST,SNPLIST[,1]%in%chromosome)
+    
+    
+    #get SNPS that lie with in the range defined by the annotation, on the chromosome of interest
+    #create a list of possible positions
+    Possiblepositions<-c()
+    
+    for (L in 1:nrow(chromosomesetofinterest)) {
+      newlist<-chromosomesetofinterest[L,4]:chromosomesetofinterest[L,5]
+      Possiblepositions<-c(Possiblepositions,newlist)
+    }
+    #subset the SNP list if the position is %in% one of the possible positions
+    subset_Intergenic_SNPLIST<- subset(chromosomeSNPLISTofinterest,chromosomeSNPLISTofinterest[,4]%in% Possiblepositions)
+    
+    
+    #get SNP variants
+    #we are using the row indexes from out SNPlist
+    
+    subset_Intergenic_VARIANTLIST<- SNPVARIANTS[as.numeric(row.names(subset_Intergenic_SNPLIST)),]
+    #make sure the names of SNPS are equal before proceeding 
+    #this will need to be an if else statement before adding it to the dataframe for writing 
+    print(chromosome)
+    Genemodel_SNPLIST<-rbind(Genemodel_SNPLIST,subset_Intergenic_SNPLIST)
+    Genemodel_VARIANTLIST<-rbind(Genemodel_VARIANTLIST,subset_Intergenic_VARIANTLIST)
+  }
+  #write .tped & .map file so they can be used in other analyses
+  write.table(Genemodel_SNPLIST, paste0(Genetypeofinterest,"/",Genetypeofinterest,".map"), col.names = F,row.names = F,quote = F, sep = "\t")
+  write.table(Genemodel_VARIANTLIST, paste0(Genetypeofinterest,"/",Genetypeofinterest,".tped"), col.names = F,row.names = F,quote = F)
+  
 }
 
 

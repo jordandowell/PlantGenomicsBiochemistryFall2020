@@ -7,7 +7,7 @@ library("rtracklayer")
 #import KGML file
 #make sure you are in your project directory
 #change file name to your xml file you downloads
-TerpenoidKGML <- "data/ec00232.xml"
+TerpenoidKGML <- "data/ec00942.xml"
 Terpenoid <- parseKGML(TerpenoidKGML)
 
 
@@ -131,7 +131,7 @@ summary(SUNFLOWERANNOTATION_Subset$type)
 
 #we are making an assumption that the SNPlist and SNPvariants are in the same order
 SNPLIST<-read.table("data/SNPLIST_XRQv1_412_261_filtered.map", )
-SNPVARIANTS<- read.table("../data/SNP_VARIANTS_XRQv1_412_261_filtered.tped")
+SNPVARIANTS<- read.table("data/SNP_VARIANTS_XRQv1_412_261_filtered.tped")
 
 
 

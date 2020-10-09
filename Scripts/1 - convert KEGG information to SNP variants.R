@@ -52,7 +52,7 @@ SUNFLOWERTOTALGENES<- length(SUNFLOWERANNOTATION@listData$ec_number)
 
 
 SUNFLOWERENZYMES<-data.frame()
-#options(stringsAsFactors = F)
+
 #this loop make take ~2hours  to run its checking every gene
 for (i in 1:SUNFLOWERTOTALGENES) {
   #if statement checking that the length of the ec # is not equal to 0 
@@ -75,7 +75,7 @@ for (i in 1:SUNFLOWERTOTALGENES) {
     }
   }
 }
-#options(stringsAsFactors = T)
+
 
 
 
@@ -86,7 +86,7 @@ for (i in 1:SUNFLOWERTOTALGENES) {
 i<-1 
 #use for loop to get genemodel indexes
 SUNFLOWERGENEMODELS<-data.frame()
-options(stringsAsFactors = F)
+
 for (i in 1:SUNFLOWERTOTALGENES) {
   #if any parent gene matches previously identifed mrna
   if(any(SUNFLOWERANNOTATION@listData$Parent[i][[1]]%in%SUNFLOWERENZYMES[,3])){
@@ -98,7 +98,7 @@ for (i in 1:SUNFLOWERTOTALGENES) {
     print(SUNFLOWERANNOTATION@listData$ID[i][[1]])
   }
 }
-options(stringsAsFactors = T)
+
 
 
 
@@ -106,14 +106,14 @@ options(stringsAsFactors = T)
 #combine Genemodels with parent Genes & add EC for each model
 
 SUNFLOWERGENEMODELS_1<-data.frame()
-options(stringsAsFactors = F)
+
 for (i in 1:nrow(SUNFLOWERGENEMODELS)){
   
   newrow<-c(SUNFLOWERGENEMODELS[i,1],SUNFLOWERENZYMES[match(SUNFLOWERGENEMODELS[i,2],SUNFLOWERENZYMES[,3]),2],SUNFLOWERGENEMODELS[i,3])
   SUNFLOWERGENEMODELS_1<-rbind(SUNFLOWERGENEMODELS_1,newrow)
   print(i)
 }
-options(stringsAsFactors = T)
+
 
 
 #bind enzymes and genemodels

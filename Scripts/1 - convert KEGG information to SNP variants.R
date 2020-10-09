@@ -1,13 +1,21 @@
-#importing KGML files to get enzyme data
-source("https://bioconductor.org/biocLite.R")
-biocLite("KEGGgraph")
-library(KEGGgraph)
+#install and load required packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+if (!requireNamespace("ape", quietly = TRUE))
+  install.packages("ape")
+
+BiocManager::install("KEGGgraph")
+BiocManager::install("rtracklayer")
+
+
 library(ape)
+library("KEGGgraph")
 library("rtracklayer")
 #import KGML file
 #make sure you are in your project directory
 #change file name to your xml file you downloads
-TerpenoidKGML <- "data/ec00942.xml"
+TerpenoidKGML <- "data/ec00906.xml"
 Terpenoid <- parseKGML(TerpenoidKGML)
 
 
@@ -44,7 +52,7 @@ SUNFLOWERTOTALGENES<- length(SUNFLOWERANNOTATION@listData$ec_number)
 
 
 SUNFLOWERENZYMES<-data.frame()
-options(stringsAsFactors = F)
+#options(stringsAsFactors = F)
 #this loop make take ~2hours  to run its checking every gene
 for (i in 1:SUNFLOWERTOTALGENES) {
   #if statement checking that the length of the ec # is not equal to 0 
@@ -67,7 +75,7 @@ for (i in 1:SUNFLOWERTOTALGENES) {
     }
   }
 }
-options(stringsAsFactors = T)
+#options(stringsAsFactors = T)
 
 
 

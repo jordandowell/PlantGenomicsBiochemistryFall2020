@@ -11,27 +11,30 @@ if(!require("SNPRelate")){
   BiocManager::install("SNPRelate")
   stopifnot(require("SNPRelate"))
 }
-library(SNPRelate)
-library(ggplot2)
 if(!require("GGally")){
   install.packages("GGally")
   stopifnot(require("GGally"))
 }
 library("GGally")
-
+library(SNPRelate)
+library(ggplot2)
+library(SNPRelate)
+library(gdsfmt)
 
 # starting off recoding  our tped, & tfam files into bed files via plink
 
 
 #give your computer permission to run external programs
-system("chmod -R 755 ../PlantGenomicsBiochemistryFall2020") # grant permissions (to avoid access denied errors)
+# this may require you to do some googling on your part if this does not work.
+#kewords: command line grant access folder binary
+system("chmod -R 755 ../PlantGenomicsBiochemistryFall2020") # grant permissions (to avoid access denied errors when tyring to run the external binary)
 
 
 #change NEWSNPs to whatever file you are interested 
 #this needs to be the precursor characters for the .tped and .tfam files
 getwd()
 NEWSNPS<-"Global_SNPlist"
-
+#the following is using the plink software to recode the files into more usable forms
 system(paste("data/Software/plink --tfile",paste0("data/datasetsScript2/", NEWSNPS),"--covar",paste0("data/datasetsScript2/", NEWSNPS,"_COVARIATES.txt") , "--make-bed", "--allow-no-sex --allow-extra-chr", "--out ",paste0("data/datasetsScript2/", NEWSNPS)))
 
 
@@ -39,7 +42,7 @@ system(paste("data/Software/plink --tfile",paste0("data/datasetsScript2/", NEWSN
 #Investigate the contents of the PLINK files .fam and .bim files
 #Count number of individuals in the study
 
-
+#read in fam file to get the names of the individuals in the dataset
 FAM<-read.table(file=paste0("data/datasetsScript2/",NEWSNPS,".fam"),sep=" ", header=FALSE)
 
 #view top entries
@@ -60,27 +63,28 @@ dim(map)
 #read in file information on breeding groups of samples
 BreedingGroupInfo<-read.csv(file="data/datasetsScript2/SAM_Metadata.csv",header=TRUE)
 
-#get information on th e number of sample individuals from each breeding group
+#get information on the number of sample individuals from each breeding group
 table(BreedingGroupInfo$GROUP)
 
 
 #check to make sure the order of individuals is the same as the PLINK file
 #following line translated is:
-#what is the sum of the breeding group column PPN that is not in also in FAM column V1
+#what is the sum of the breeding group column PPN that is not also in FAM column V1
 #if they match the number should be 0 
 sum(BreedingGroupInfo$PPN!=FAM$V1)
 
 
-#Convert bed bim and fam files into a .gds file 
+#Convert bed bim and fam files into a .gds file this helps speed up calculations in large datasets
 #name files to be used
 bedfile<-paste0("data/datasetsScript2/",NEWSNPS,".bed")
 bimfile<-paste0("data/datasetsScript2/",NEWSNPS,".bim")
 famfile<-paste0("data/datasetsScript2/",NEWSNPS,".fam")
-#place them in the function and name the output
+#place the above files in the function and name the output
 snpgdsBED2GDS(bedfile,famfile,bimfile,cvt.chr="char", out.gdsfn = paste0("data/datasetsScript2/",NEWSNPS,".gds"))
 
 #open the .gds file
 genofile <- snpgdsOpen(paste0("data/datasetsScript2/",NEWSNPS,".gds"))
+#get a visual of the file structure
 head(genofile)
 
 
@@ -89,6 +93,7 @@ head(genofile)
 
 
 #we can see the sample id or snp id
+#remove head to see the full list. the head file shows the first 6 entries
 head(read.gdsn(index.gdsn(genofile, "sample.id")))
 head(read.gdsn(index.gdsn(genofile, "snp.id")))
 

@@ -101,7 +101,7 @@ head(read.gdsn(index.gdsn(genofile, "snp.id")))
 #extract genotype for a specific SNP this can be changed to any SNP.id you would like to see
 g <- snpgdsGetGeno(genofile, snp.id="Ha412HOChr01:59890719")
 # Genotype matrix: 261 samples X 1 SNPs
-#
+# view a histogram of the alleles at that SNP 0 & 2 are homozygous, 1 is missing or heterozygous
 hist(g)
 
 
@@ -116,7 +116,7 @@ pca <- snpgdsPCA(genofile,autosome.only = F)
 
 
 
-#incorporate the population membership in the PCA plot. This much be categorical in the following example
+#incorporate the population membership in the PCA plot. This must be categorical in the following example
 
 sample.id <- read.gdsn(index.gdsn(genofile, "sample.id"))
 population<-BreedingGroupInfo$BREED
@@ -147,6 +147,8 @@ head((pc.percent))
 
 
 #make a single PCA plot
+# a warning will follow about using a discrete variable for size ignore it! 
+#traditionally you want a continuous variable related to size
 SinglePCA_Plot<-ggplot(tab,
                        aes(x=EV1,y=EV2,color= pop, size=Core))+
   xlab(paste0("PC 1 (",pc.percent[1],"% Variance Explained)"))+
@@ -156,7 +158,7 @@ SinglePCA_Plot<-ggplot(tab,
 #note if you want to view the plot highlight just the plot name and run it the plot can be exported through the GUI
 
 
-#Now make scatterplots of the top 4 PCs with proportional variance explained included
+#Now make scatter plots of the top 4 PCs with proportional variance explained included
 
 
 #pairwise scatter plots of the first 4 components
@@ -170,7 +172,7 @@ PairwisePCA_plots<-ggpairs(tab, columns = c("EV1","EV2","EV3","EV4"),
                            diag = list(continuous=wrap("densityDiag", alpha=0.2)),
                            lower = list(continuous="blank"),
                            upper = list(continuous='points')) +theme_linedraw()
-
+#the following lines add the size changes for the core 12 in the plot
 #subset locations to add size for just scatter plots
 
 xpositions<-c(1,1,1,2,2,3)
@@ -184,6 +186,10 @@ for (i in 1:length(xpositions)) {
   PairwisePCA_plots[xpositions[i],ypositions[i]]<-PairwisePCA_plots4+aes(size=Core)
 }
 
+#end of plot
+
+
+########################Refining the SNP list based on linkage disequilibrium & autocorrelation
 
 
 #often autocorrelation of SNPs or linkage disequilibrium can alter PCA results
@@ -210,9 +216,6 @@ tab2 <- data.frame(sample.id = pca2$sample.id,
                      EV4 = pca2$eigenvect[,4],# the fourth eigenvector
                    stringsAsFactors = FALSE)
 
-# Add extra space to right of plot area; change clipping to figure
-
-
 #round percent variation explained to 100ths
 pc.percent <- round(pca2$varprop*100,2)
 head(round(pc.percent, 2))
@@ -223,6 +226,7 @@ SinglePCA_Plot<-ggplot(tab2,
   xlab(paste0("PC 1 (",pc.percent[1],"% Variance Explained)"))+
   ylab(paste0("PC 2 (",pc.percent[2],"% Variance Explained)"))+
   geom_point()+theme_linedraw()
+
 
 
 #pairwise scatter plots of the first 4 components
@@ -236,7 +240,7 @@ PairwisePCA_plots<-ggpairs(tab2, columns = c("EV1","EV2","EV3","EV4"),
        diag = list(continuous=wrap("densityDiag", alpha=0.2)),
         lower = list(continuous="blank"),
         upper = list(continuous='points')) +theme_linedraw()
-
+#the following lines add the size changes for the core 12 in the plot
 #subset locations to add size for just scatter plots
 
 xpositions<-c(1,1,1,2,2,3)
@@ -249,19 +253,21 @@ for (i in 1:length(xpositions)) {
   PairwisePCA_plots4<-PairwisePCA_plots[xpositions[i],ypositions[i]]
   PairwisePCA_plots[xpositions[i],ypositions[i]]<-PairwisePCA_plots4+aes(size=Core)
 }
+#end of plot
 
 
-
-#######now lets compare our results to the population structure of H. annuus
+#######now lets compare our results to the population structure of H. annuus. 
+#Population structure data taken from Huber et al. 2018 (https://www.nature.com/articles/s41477-018-0329-0)
  
 
 HannuusPopstructure<-read.table(file=paste0("data/datasetsScript2/",NEWSNPS,".cov"),sep=" ", header=TRUE)
+#take a look the data set should be very similar to what we have been using so far
 View(HannuusPopstructure)
 
 
 
-# make a dataset
-#create that dataframe for plotting 
+# 
+#create that dataframe for plotting adding in the meta data we have been using 
 tab3 <- data.frame(sample.id = HannuusPopstructure$FID,
                    Core = factor(Core12,levels = c("NON-CORE","CORE"))[match(HannuusPopstructure$FID, sample.id)],
                    pop = factor(population)[match(HannuusPopstructure$FID, sample.id)],
@@ -276,7 +282,6 @@ tab3 <- data.frame(sample.id = HannuusPopstructure$FID,
 
 
 #make plots.
-
 #make a single PCA plot change color or size based on columns of interest
 SinglePCA_Plot<-ggplot(tab3,
                        aes(x=COV1,y=COV2,color= pop, size=Core))+
@@ -284,7 +289,7 @@ SinglePCA_Plot<-ggplot(tab3,
   ylab(paste0("Population Structure PC2 14.5 VE"))+
   geom_point()+theme_linedraw()
 
-
+#the following lines add the size changes for the core 12 in the plot
 #pairwise scatter plots of the first 4 components
 PairwisePCA_plots<-ggpairs(tab3, columns = c("COV1","COV2","COV3","COV4"),
                            aes(color=pop),
@@ -309,9 +314,12 @@ for (i in 1:length(xpositions)) {
   PairwisePCA_plots[xpositions[i],ypositions[i]]<-PairwisePCA_plots4+aes(size=Core)
 }
 
+#end of plot
 
 
-
+#following line can be used to test for correlations between different columnts and datasets
+# use ?cor.test to get more parameters and a better description of the function.
+# tab$EV4 translated is dataset "tab" column "EV4"...... "$" is used to access columns within the dataset 
 
 cor.test(tab$EV4,tab3$COV2)
 

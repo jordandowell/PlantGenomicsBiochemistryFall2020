@@ -149,6 +149,7 @@ head((pc.percent))
 #make a single PCA plot
 # a warning will follow about using a discrete variable for size ignore it! 
 #traditionally you want a continuous variable related to size
+#if you want to change the color to the more specific population description change color= pop to color = Specificpop
 SinglePCA_Plot<-ggplot(tab,
                        aes(x=EV1,y=EV2,color= pop, size=Core))+
   xlab(paste0("PC 1 (",pc.percent[1],"% Variance Explained)"))+

@@ -23,7 +23,6 @@ library(gdsfmt)
 
 # starting off recoding  our tped, & tfam files into bed files via plink
 
-
 #give your computer permission to run external programs
 # this may require you to do some googling on your part if this does not work.
 #kewords: command line grant access folder binary
@@ -89,7 +88,7 @@ head(genofile)
 
 
 #if you need to reopen the gds file for some reason make sure to close the gds file un comment the following line
-#closefn.gds(genofile)
+closefn.gds(genofile)
 
 
 #we can see the sample id or snp id
@@ -133,8 +132,8 @@ tab <- data.frame(sample.id = pca$sample.id,
                   Core = factor(Core12,levels = c("NON-CORE","CORE"))[match(pca$sample.id, sample.id)],
                   EV1 = pca$eigenvect[,1],    # the first eigenvector
                   EV2 = pca$eigenvect[,2],    # the second eigenvector
-                  EV3 = pca2$eigenvect[,3],# the third eigenvector
-                  EV4 = pca2$eigenvect[,4],# the fourth eigenvector
+                  EV3 = pca$eigenvect[,3],# the third eigenvector
+                  EV4 = pca$eigenvect[,4],# the fourth eigenvector
                   stringsAsFactors = FALSE)
 #view the resulting data frame
 head(tab)
